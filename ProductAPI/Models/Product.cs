@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
+using ProductAPI.Validation;
 
 namespace ProductAPI.Models
 {
@@ -7,7 +8,7 @@ namespace ProductAPI.Models
     {
         [Key]
         [DisplayName("Id")]
-        public int Id { get; set; }
+        public Guid Id { get; set; }
 
         [Required(ErrorMessage = "Informe o nome do produto")]
         [DisplayName("Nome do Produto")]
@@ -19,7 +20,7 @@ namespace ProductAPI.Models
 
         [Required(ErrorMessage = "Informe o valor do produto")]
         [DisplayName("Valor do produto")]
-        // [NonNegative]
+        [NonNegative]
         public decimal Price { get; set; }
     }
 }

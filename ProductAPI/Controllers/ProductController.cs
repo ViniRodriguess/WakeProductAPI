@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using ProductAPI.Data;
 using ProductAPI.Models;
 using System;
+using System.ComponentModel.DataAnnotations;
+using Xunit.Sdk;
 
 namespace ProductAPI.Controllers
 {
@@ -17,7 +19,6 @@ namespace ProductAPI.Controllers
              _context = context;
          }
          
-        // GET: api/Product
         [HttpGet]
         public async Task<ActionResult<List<Product>>> GetAllProducts()
         {
@@ -26,9 +27,45 @@ namespace ProductAPI.Controllers
             return Ok(products);
         }
 
-        // GET: api/Product
+        [HttpGet("order")]
+        public async Task<ActionResult<List<Product>>> GetOrderedProducts(string sortBy)
+        {
+            IQueryable<Product> query = _context.Products;
+
+            switch (sortBy.ToLower())
+            {
+                case "name":
+                    query = query.OrderBy(p => p.Name);
+                    break;
+                case "stock":
+                    query = query.OrderBy(p => p.Stock);
+                    break;
+                case "price":
+                    query = query.OrderBy(p => p.Price);
+                    break;
+                default:
+                    return BadRequest("Campo de ordenação inválido.");
+            }
+
+            var products = await query.ToListAsync();
+            return Ok(products);
+        }
+
+        [HttpGet("search")]
+        public async Task<ActionResult<List<Product>>> SearchProducts(string name)
+        {
+            var products = await _context.Products
+                                        .Where(p => p.Name.Contains(name))
+                                        .ToListAsync();
+
+            if (products.Count == 0)
+                return NotFound("Nenhum produto encontrado com esse nome.");
+
+            return Ok(products);
+        }
+
         [HttpGet("{id}")]
-        public async Task<ActionResult<Product>> GetProduct(int id)
+        public async Task<ActionResult<Product>> GetProduct(Guid id)
         {
             var product = await _context.Products.FindAsync(id);
             if (product is null)
@@ -40,23 +77,42 @@ namespace ProductAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<List<Product>>> AddProduct(string name, int stock, decimal price)
         {
+
             var newProduct = new Product
             {
+                Id = Guid.NewGuid(),
                 Name = name,
                 Stock = stock,
                 Price = price
             };
+
             _context.Products.Add(newProduct);
             await _context.SaveChangesAsync();
 
             return Ok("Produto criado com sucesso!");
         }
 
-        [HttpPut]
-        public async Task<ActionResult<List<Product>>> UpdateProduct(int id, string name, int stock, decimal price)
+        /*[HttpPost]
+        public async Task<ActionResult<Product>> AddProduct([FromBody] Product product)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            product.Id = Guid.NewGuid();
+            _context.Products.Add(product);
+            await _context.SaveChangesAsync();
+
+            return Ok(product);
+        }*/
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult<List<Product>>> UpdateProduct(Guid id, string name, int stock, decimal price)
+        {
+
             var dbProduct = await _context.Products.FindAsync(id);
-            var res = await _context.Products.ToListAsync();
+            //var res = await _context.Products.ToListAsync();
             if (dbProduct is null)
                 return NotFound("Produto não encontrado");
 
@@ -66,11 +122,11 @@ namespace ProductAPI.Controllers
 
             await _context.SaveChangesAsync();
 
-            return Ok(await _context.Products.ToListAsync());
+            return Ok(dbProduct);
         }
 
-        [HttpDelete]
-        public async Task<ActionResult<List<Product>>> DeleteProduct(int id)
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<List<Product>>> DeleteProduct(Guid id)
         {
             var dbProduct = await _context.Products.FindAsync(id);
             if (dbProduct is null)
@@ -79,7 +135,7 @@ namespace ProductAPI.Controllers
             _context.Products.Remove(dbProduct);
             await _context.SaveChangesAsync();
 
-            return Ok(await _context.Products.ToListAsync());
+            return Ok(dbProduct);
         }
     }
 }
