@@ -1,0 +1,23 @@
+@ProductAPI_HostAddress = https://localhost:7263
+
+GET {{ProductAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
+
+GET {{ProductAPI_HostAddress}}/weatherforecast
+
+###
+
+GET {{ProductAPI_HostAddress}}/api/product
+
+###
+
+POST {{ProductAPI_HostAddress}}/api/product
+Content-Type: application/json
+
+{
+  //Product
+}
+
+###
