@@ -1,0 +1,46 @@
+name: .NET Tests
+
+on:
+  push:
+    branches:
+      - main  
+  pull_request:
+    branches:
+      - main  
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '8.0.3'  
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+
+    - name: Test
+      run: |
+        dotnet test --verbosity normal --configuration Release --no-build \
+          /p:CollectCoverage=true \
+          /p:CoverletOutputFormat=lcov \
+          /p:CoverletOutput=$(Build.SourcesDirectory)/TestResults/Coverage/
+    
+    - name: Publish Test Results
+      uses: actions/upload-artifact@v2
+      with:
+        name: TestResults
+        path: TestResults
+
+    - name: Publish Code Coverage
+      uses: actions/upload-artifact@v2
+      with:
+        name: Coverage
+        path: $(Build.SourcesDirectory)/TestResults/Coverage/
