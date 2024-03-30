@@ -1,11 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
-using ProductAPI.Validation;
+using ProductAPI.Validations;
 
 namespace ProductAPI.Models
 {
     public class Product
     {
+        //private decimal _price;
+
         [Key]
         [DisplayName("Id")]
         public Guid Id { get; set; }
@@ -22,5 +24,17 @@ namespace ProductAPI.Models
         [DisplayName("Valor do produto")]
         [NonNegative]
         public decimal Price { get; set; }
+        /*public decimal Price
+        {
+            get { return _price; }
+            set
+            {
+                if (value < 0)
+                {
+                    throw new ArgumentException("O valor do produto não pode ser negativo");
+                }
+                _price = value;
+            }
+        }*/
     }
 }

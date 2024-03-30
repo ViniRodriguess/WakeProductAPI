@@ -12,13 +12,9 @@
 
   <ItemGroup>
     <Compile Remove="NovaPasta2\**" />
-    <Compile Remove="Validations\**" />
     <Content Remove="NovaPasta2\**" />
-    <Content Remove="Validations\**" />
     <EmbeddedResource Remove="NovaPasta2\**" />
-    <EmbeddedResource Remove="Validations\**" />
     <None Remove="NovaPasta2\**" />
-    <None Remove="Validations\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,6 +22,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.msbuild" Version="6.0.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="8.0.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.3" />
@@ -36,6 +40,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Moq" Version="4.20.70" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="SQLite" Version="3.13.0" />
     <PackageReference Include="SQLitePCLRaw.core" Version="2.1.8" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace ProductAPI.Validation
+namespace ProductAPI.Validations
 {
     public class NonNegativeAttribute : ValidationAttribute
     {

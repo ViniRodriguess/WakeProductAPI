@@ -77,6 +77,10 @@ namespace ProductAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<List<Product>>> AddProduct(string name, int stock, decimal price)
         {
+            if (price < 0)
+            {
+                return BadRequest("O preço do produto não pode ser negativo.");
+            }
 
             var newProduct = new Product
             {
@@ -91,6 +95,7 @@ namespace ProductAPI.Controllers
 
             return Ok("Produto criado com sucesso!");
         }
+
 
         /*[HttpPost]
         public async Task<ActionResult<Product>> AddProduct([FromBody] Product product)
@@ -110,9 +115,12 @@ namespace ProductAPI.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult<List<Product>>> UpdateProduct(Guid id, string name, int stock, decimal price)
         {
+            if (price < 0)
+            {
+                return BadRequest("O preço do produto não pode ser negativo.");
+            }
 
             var dbProduct = await _context.Products.FindAsync(id);
-            //var res = await _context.Products.ToListAsync();
             if (dbProduct is null)
                 return NotFound("Produto não encontrado");
 
@@ -125,17 +133,24 @@ namespace ProductAPI.Controllers
             return Ok(dbProduct);
         }
 
+
         [HttpDelete("{id}")]
         public async Task<ActionResult<List<Product>>> DeleteProduct(Guid id)
         {
             var dbProduct = await _context.Products.FindAsync(id);
-            if (dbProduct is null)
+            if (dbProduct == null)
+            {
                 return NotFound("Produto não encontrado");
+            }
 
             _context.Products.Remove(dbProduct);
             await _context.SaveChangesAsync();
 
             return Ok(dbProduct);
         }
+
+
+
+
     }
 }
