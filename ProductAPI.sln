@@ -7,7 +7,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProductAPI", "ProductAPI\Pr
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{A56D68E8-EF74-400C-A1FF-BE31C5069202}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProductControllerTest", "ProductControllerTest\ProductControllerTest.csproj", "{524D00EE-B182-4E9E-93BD-374938B3BF1F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProductControllerTest", "ProductControllerTest\ProductControllerTest.csproj", "{524D00EE-B182-4E9E-93BD-374938B3BF1F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{E82374FD-2FB6-47E3-BAAE-8A194027074A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{E966EA40-134B-42CB-91DE-3623F8989339}"
+	ProjectSection(SolutionItems) = preProject
+		main.yml = main.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,6 +36,7 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{524D00EE-B182-4E9E-93BD-374938B3BF1F} = {A56D68E8-EF74-400C-A1FF-BE31C5069202}
+		{E966EA40-134B-42CB-91DE-3623F8989339} = {E82374FD-2FB6-47E3-BAAE-8A194027074A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {33D84175-BE11-4980-93D7-70858EBAEA51}
