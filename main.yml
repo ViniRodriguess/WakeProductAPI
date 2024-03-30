@@ -3,10 +3,10 @@ name: .NET Tests
 on:
   push:
     branches:
-      - main  # ou nome da sua branch principal
+      - master  # ou nome da sua branch principal
   pull_request:
     branches:
-      - main  # ou nome da sua branch principal
+      - master  # ou nome da sua branch principal
 
 jobs:
   build:
@@ -16,9 +16,9 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v1
+      uses: 
       with:
-        dotnet-version: '6.0.x'  # ajuste a versão conforme necessário
+        dotnet-version: '8.0.x'
 
     - name: Restore dependencies
       run: dotnet restore
