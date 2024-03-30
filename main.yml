@@ -31,7 +31,7 @@ jobs:
         dotnet test --verbosity normal --configuration Release --no-build \
           /p:CollectCoverage=true \
           /p:CoverletOutputFormat=lcov \
-          /p:CoverletOutput=$(Build.SourcesDirectory)/TestResults/Coverage/
+          /p:CoverletOutput=/home/runner/work/WakeProductAPI/WakeProductAPI/Test/ProductControllerTests/TestResults/Coverage/
     
     - name: Publish Test Results
       uses: actions/upload-artifact@v2
