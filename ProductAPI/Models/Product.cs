@@ -1,11 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
+using ProductAPI.Repository.Interfaces;
 
 namespace ProductAPI.Models
 {
-    public class Product
+    public class Product : IEntityWithName
     {
-
         [Key]
         [DisplayName("Id")]
         public Guid Id { get; set; }

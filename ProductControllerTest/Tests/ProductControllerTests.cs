@@ -1,330 +1,320 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using ProductAPI.Controllers;
-using ProductAPI.Data;
 using ProductAPI.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Xunit;
+using ProductAPI.Repository.Interfaces;
 using Moq;
+using System.Linq.Expressions;
+using System.Linq;
 
 namespace ProductAPI.Tests
 {
     public class ProductControllerTests
     {
-        [Fact]
-        public async Task GetAllProducts_ReturnsOkResult()
+        private readonly Mock<IBaseRepository<Product>> _mockRepository;
+        private readonly ProductController _controller;
+
+        public ProductControllerTests()
         {
-            // Arrange
-            var options = new DbContextOptionsBuilder<DataContext>()
-                .UseInMemoryDatabase(databaseName: "TestDatabase")
-                .Options;
-            var context = new DataContext(options);
-            var controller = new ProductController(context);
-
-            // Act
-            var result = await controller.GetAllProducts();
-
-            // Assert
-            Assert.IsType<OkObjectResult>(result.Result);
+            _mockRepository = new Mock<IBaseRepository<Product>>();
+            _controller = new ProductController(_mockRepository.Object);
         }
 
         [Fact]
-        public async Task GetAllProducts_ReturnsEmptyList()
+        public async Task GetAllProducts_ReturnsOkResultWithListOfProducts()
         {
             // Arrange
-            var options = new DbContextOptionsBuilder<DataContext>()
-                .UseInMemoryDatabase(databaseName: "TestDatabase")
-                .Options;
-            var context = new DataContext(options);
-            var controller = new ProductController(context);
+            var expectedProducts = new List<Product>
+            {
+                new Product { Id = Guid.NewGuid(), Name = "Product A", Stock = 10, Price = 20.0m },
+                new Product { Id = Guid.NewGuid(), Name = "Product B", Stock = 15, Price = 25.0m }
+            };
+
+            var productRepositoryMock = new Mock<IBaseRepository<Product>>();
+            productRepositoryMock.Setup(repo => repo.GetAll()).ReturnsAsync(expectedProducts);
+
+            var controller = new ProductController(productRepositoryMock.Object);
 
             // Act
             var result = await controller.GetAllProducts();
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            var products = Assert.IsAssignableFrom<List<Product>>(okResult.Value);
-            Assert.Empty(products);
+            var returnedProducts = Assert.IsAssignableFrom<List<Product>>(okResult.Value);
+            Assert.Equal(expectedProducts.Count, returnedProducts.Count);
         }
 
-
         [Fact]
-        public async Task GetOrderedProducts_ReturnsOkResult()
+        public async Task GetAllProducts_ReturnsEmptyList()
         {
             // Arrange
-            var options = new DbContextOptionsBuilder<DataContext>()
-                .UseInMemoryDatabase(databaseName: "TestDatabase")
-                .Options;
-            var context = new DataContext(options);
-            var controller = new ProductController(context);
+            var expectedProducts = new List<Product>();
+
+            var productRepositoryMock = new Mock<IBaseRepository<Product>>();
+            productRepositoryMock.Setup(repo => repo.GetAll()).ReturnsAsync(expectedProducts);
+
+            var controller = new ProductController(productRepositoryMock.Object);
 
             // Act
-            var result = await controller.GetOrderedProducts("name");
+            var result = await controller.GetAllProducts();
 
             // Assert
-            Assert.IsType<OkObjectResult>(result.Result);
+            var okResult = Assert.IsType<OkObjectResult>(result.Result);
+            var returnedProducts = Assert.IsAssignableFrom<List<Product>>(okResult.Value);
+            Assert.Empty(returnedProducts);
+        }
+
+        [Fact]
+        public async Task GetOrderedProducts_ReturnsOkResultWithListOfOrderedProducts()
+        {
+            // Arrange
+            var sortBy = "name";
+            var expectedProducts = new List<Product>
+            {
+                new Product { Id = Guid.NewGuid(), Name = "Product B", Stock = 15, Price = 25.0m },
+                new Product { Id = Guid.NewGuid(), Name = "Product A", Stock = 10, Price = 20.0m }
+            };
+
+            var productRepositoryMock = new Mock<IBaseRepository<Product>>();
+            productRepositoryMock.Setup(repo => repo.GetAllOrderedBy(It.IsAny<Expression<Func<Product, object>>>()))
+                                 .ReturnsAsync(expectedProducts);
+
+            var controller = new ProductController(productRepositoryMock.Object);
+
+            // Act
+            var result = await controller.GetOrderedProducts(sortBy);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result.Result);
+            var returnedProducts = Assert.IsAssignableFrom<List<Product>>(okResult.Value);
+            Assert.Equal(expectedProducts.Count, returnedProducts.Count);
         }
 
         [Fact]
         public async Task GetOrderedProducts_ReturnsBadRequest()
         {
             // Arrange
-            var options = new DbContextOptionsBuilder<DataContext>()
-                .UseInMemoryDatabase(databaseName: "TestDatabase")
-                .Options;
-
-            // Criar um contexto de banco de dados simulado usando o contexto de banco de dados real
-            var context = new DataContext(options);
-
-            // Simular um contexto de controlador com o contexto de banco de dados simulado
-            var controller = new ProductController(context);
+            var sortBy = "invalid";
+            var controller = new ProductController(Mock.Of<IBaseRepository<Product>>());
 
             // Act
-            var result = await controller.GetOrderedProducts("InvalidSortBy");
+            var result = await controller.GetOrderedProducts(sortBy);
 
             // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result); // Verificar se a resposta é BadRequest
-            Assert.Equal("Campo de ordenação inválido.", badRequestResult.Value); // Verificar a mensagem de erro retornada
+            var statusCodeResult = Assert.IsType<BadRequestObjectResult>(result.Result);
+            Assert.Equal(400, statusCodeResult.StatusCode);
+        }
+
+        [Fact]
+        public async Task SearchProducts_ReturnsOkResultWithMatchingProducts()
+        {
+            // Arrange
+            var searchName = "Product";
+            var expectedProducts = new List<Product>
+            {
+                new Product { Id = Guid.NewGuid(), Name = "Product A", Stock = 10, Price = 20.0m },
+                new Product { Id = Guid.NewGuid(), Name = "Product B", Stock = 15, Price = 25.0m }
+            };
+
+            var productRepositoryMock = new Mock<IBaseRepository<Product>>();
+            productRepositoryMock.Setup(repo => repo.SearchByName(searchName)).ReturnsAsync(expectedProducts);
+
+            var controller = new ProductController(productRepositoryMock.Object);
+
+            // Act
+            var result = await controller.SearchProducts(searchName);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result.Result);
+            var returnedProducts = Assert.IsAssignableFrom<List<Product>>(okResult.Value);
+            Assert.Equal(expectedProducts.Count, returnedProducts.Count);
+        }
+
+        [Fact]
+        public async Task SearchProducts_EmptyList_ReturnsEmptyList()
+        {
+            // Arrange
+            var searchName = "Product";
+            var expectedProducts = new List<Product>();
+
+            var productRepositoryMock = new Mock<IBaseRepository<Product>>();
+            productRepositoryMock.Setup(repo => repo.SearchByName(searchName)).ReturnsAsync(expectedProducts);
+
+            var controller = new ProductController(productRepositoryMock.Object);
+
+            // Act
+            var result = await controller.SearchProducts(searchName);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result.Result);
+            var returnedProducts = Assert.IsAssignableFrom<List<Product>>(okResult.Value);
+            Assert.Empty(returnedProducts);
         }
 
 
         [Fact]
-        public async Task SearchProducts_ReturnsOkResult()
+        public async Task GetProduct_ReturnsOkResultWithProduct()
         {
             // Arrange
-            var options = new DbContextOptionsBuilder<DataContext>()
-                .UseInMemoryDatabase(databaseName: "TestDatabase")
-                .Options;
-            var context = new DataContext(options);
-            var controller = new ProductController(context);
-
-            // Adicione alguns produtos de teste ao banco de dados em memória
-            var product1 = new Product { Name = "Example Product 1", Stock = 10, Price = 20 };
-            var product2 = new Product { Name = "Example Product 2", Stock = 15, Price = 25 };
-            await context.Products.AddRangeAsync(product1, product2);
-            await context.SaveChangesAsync();
-
-            // Act
-            var result = await controller.SearchProducts("Example Product 1"); // Pesquise por um produto existente
-
-            // Assert
-            Assert.IsType<OkObjectResult>(result.Result);
-        }
-
-        [Fact]
-        public async Task SearchProducts_ReturnsNotFound()
-        {
-            // Arrange
-            var options = new DbContextOptionsBuilder<DataContext>()
-                .UseInMemoryDatabase(databaseName: "TestDatabase")
-                .Options;
-
-            // Criar um contexto de banco de dados simulado usando o contexto de banco de dados real
-            var context = new DataContext(options);
-
-            // Simular um contexto de controlador com o contexto de banco de dados simulado
-            var controller = new ProductController(context);
-
-            // Act
-            var result = await controller.SearchProducts("Nonexistent Product");
-
-            // Assert
-            var notFoundResult = Assert.IsType<NotFoundObjectResult>(result.Result); // Verificar se a resposta é NotFound
-            Assert.Equal("Nenhum produto encontrado com esse nome.", notFoundResult.Value); // Verificar a mensagem de erro retornada
-        }
-
-
-        [Fact]
-        public async Task GetProduct_ReturnsOkWithProduct()
-        {
-            // Arrange
-            var options = new DbContextOptionsBuilder<DataContext>()
-                .UseInMemoryDatabase(databaseName: "TestDatabase")
-                .Options;
-
-            // Criar um contexto de banco de dados simulado usando o contexto de banco de dados real
-            var context = new DataContext(options);
-
-            // Adicionar um produto com um ID específico ao banco de dados
             var productId = Guid.NewGuid();
-            var productName = "Test Product";
-            var product = new Product { Id = productId, Name = productName };
-            await context.Products.AddAsync(product);
-            await context.SaveChangesAsync();
+            var expectedProduct = new Product { Id = productId, Name = "Product A", Stock = 10, Price = 20.0m };
 
-            // Simular um contexto de controlador com o contexto de banco de dados simulado
-            var controller = new ProductController(context);
+            var productRepositoryMock = new Mock<IBaseRepository<Product>>();
+            productRepositoryMock.Setup(repo => repo.GetById(productId)).ReturnsAsync(expectedProduct);
+
+            var controller = new ProductController(productRepositoryMock.Object);
 
             // Act
             var result = await controller.GetProduct(productId);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result.Result); // Verificar se a resposta é Ok
-            var returnedProduct = Assert.IsType<Product>(okResult.Value); // Verificar se o valor retornado é um produto
-            Assert.Equal(productName, returnedProduct.Name); // Verificar se o nome do produto retornado é o mesmo que o nome do produto adicionado
-        }
-
-
-        [Fact]
-        public async Task GetProduct_ReturnsNotFoundResult()
-        {
-            // Arrange
-            var options = new DbContextOptionsBuilder<DataContext>()
-                .UseInMemoryDatabase(databaseName: "TestDatabase")
-                .Options;
-            var context = new DataContext(options);
-            var controller = new ProductController(context);
-
-            // Act
-            var result = await controller.GetProduct(Guid.NewGuid());
-
-            // Assert
-            Assert.IsType<NotFoundObjectResult>(result.Result);
-        }
-
-
-        [Fact]
-        public async Task AddProduct_ReturnsOkResult()
-        {
-            // Arrange
-            var options = new DbContextOptionsBuilder<DataContext>()
-                .UseInMemoryDatabase(databaseName: "TestDatabase")
-                .Options;
-            var context = new DataContext(options);
-            var controller = new ProductController(context);
-
-            // Act
-            var result = await controller.AddProduct("Product Test", 10, 50); // Chama o método AddProduct com parâmetros válidos
-
-            // Assert
-            Assert.IsType<OkObjectResult>(result.Result); // Verifica se o resultado retornado é um OkObjectResult
-        }
-
-
-        [Fact]
-        public async Task AddProduct_ReturnsBadRequestForNegativePrice()
-        {
-            // Arrange
-            var options = new DbContextOptionsBuilder<DataContext>()
-                .UseInMemoryDatabase(databaseName: "TestDatabase")
-                .Options;
-            var context = new DataContext(options);
-            var controller = new ProductController(context);
-
-            // Act
-            var result = await controller.AddProduct("Example", 10, -50); // Tenta adicionar um produto com preço negativo
-
-            // Assert
-            Assert.IsType<BadRequestObjectResult>(result.Result);
-        }
-
-
-
-        [Fact]
-        public async Task UpdateProduct_ReturnsOkResult()
-        {
-            // Arrange
-            var options = new DbContextOptionsBuilder<DataContext>()
-                .UseInMemoryDatabase(databaseName: "TestDatabase")
-                .Options;
-            var context = new DataContext(options);
-            var controller = new ProductController(context);
-
-            // Adicione um produto ao banco de dados de teste
-            var newProduct = new Product { Name = "Example", Stock = 10, Price = 50 };
-            await context.Products.AddAsync(newProduct);
-            await context.SaveChangesAsync();
-
-            // Act
-            var result = await controller.UpdateProduct(newProduct.Id, "Updated Example", 20, 100); // Atualize o produto adicionado
-
-            // Assert
-            Assert.IsType<OkObjectResult>(result.Result);
+            var okResult = Assert.IsType<OkObjectResult>(result.Result);
+            var returnedProduct = Assert.IsType<Product>(okResult.Value);
+            Assert.Equal(expectedProduct.Id, returnedProduct.Id);
         }
 
         [Fact]
-        public async Task UpdateProduct_ReturnsBadRequestForNegativePrice()
+        public async Task GetProduct_ReturnsNotFound()
         {
             // Arrange
-            var options = new DbContextOptionsBuilder<DataContext>()
-                .UseInMemoryDatabase(databaseName: "TestDatabase")
-                .Options;
-            var context = new DataContext(options);
-            var controller = new ProductController(context);
+            var productId = Guid.NewGuid();
+            var productRepositoryMock = new Mock<IBaseRepository<Product>>();
+            productRepositoryMock.Setup(repo => repo.GetById(productId)).ReturnsAsync((Product?)null);
 
-            // Adicione um produto de teste para atualização
-            var product = new Product { Id = Guid.NewGuid(), Name = "Product", Stock = 10, Price = 50 };
-            context.Products.Add(product);
-            await context.SaveChangesAsync();
+            var controller = new ProductController(productRepositoryMock.Object);
 
             // Act
-            var result = await controller.UpdateProduct(product.Id, "Updated Product", 20, -50); // Tenta atualizar o produto com preço negativo
+            var result = await controller.GetProduct(productId);
 
             // Assert
-            Assert.IsType<BadRequestObjectResult>(result.Result);
+            var notFoundResult = Assert.IsType<NotFoundObjectResult>(result.Result);
+            Assert.Equal("Produto não encontrado", notFoundResult.Value);
         }
-
-
 
         [Fact]
-        public async Task DeleteProduct_ReturnsOkResult()
+        public async Task AddProduct_ValidInput_ReturnsOkResult()
         {
             // Arrange
-            var options = new DbContextOptionsBuilder<DataContext>()
-                .UseInMemoryDatabase(databaseName: "TestDatabase")
-                .Options;
-            var context = new DataContext(options);
-            var controller = new ProductController(context);
+            var productRepositoryMock = new Mock<IProductRepository>();
+            productRepositoryMock.Setup(repo => repo.Add(It.IsAny<Product>())).Verifiable();
 
-            // Crie um novo produto no banco de dados
-            var newProduct = new Product
-            {
-                Id = Guid.NewGuid(),
-                Name = "Product Name",
-                Stock = 10,
-                Price = 100
-            };
-            context.Products.Add(newProduct);
-            await context.SaveChangesAsync();
+            var controller = new ProductController(productRepositoryMock.Object);
 
             // Act
-            var result = await controller.DeleteProduct(newProduct.Id);
+            var result = await controller.AddProduct("Produto A", 10, 20.0m);
 
             // Assert
-            Assert.IsType<OkObjectResult>(result.Result);
+            Assert.IsType<OkObjectResult>(result);
         }
-
 
         [Fact]
-        public async Task DeleteProduct_ReturnsNotFound()
+        public async Task AddProduct_NegativePrice_ReturnsBadRequestResult()
         {
             // Arrange
-            var options = new DbContextOptionsBuilder<DataContext>()
-                .UseInMemoryDatabase(databaseName: "TestDatabase")
-                .Options;
+            var productRepositoryMock = new Mock<IProductRepository>();
 
-            // Criar um contexto de banco de dados simulado usando o contexto de banco de dados real
-            var context = new DataContext(options);
-
-            // Adicionar um produto com um ID específico ao banco de dados (neste caso, não adicionaremos nenhum produto)
-
-            // Simular um contexto de controlador com o contexto de banco de dados simulado
-            var controller = new ProductController(context);
+            var controller = new ProductController(productRepositoryMock.Object);
 
             // Act
-            var result = await controller.DeleteProduct(Guid.NewGuid()); // Tentar excluir um produto que não existe
+            var result = await controller.AddProduct("Produto B", 15, -10.0m);
 
             // Assert
-            Assert.IsType<NotFoundObjectResult>(result.Result); // Verificar se a resposta é NotFound
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("O preço não pode ser negativo.", badRequestResult.Value);
         }
 
+        [Fact]
+        public async Task UpdateProduct_ValidInput_ReturnsOkResult()
+        {
+            // Arrange
+            var productId = Guid.NewGuid();
+            var existingProduct = new Product { Id = productId, Name = "Produto A", Stock = 10, Price = 20.0m };
 
+            var productRepositoryMock = new Mock<IProductRepository>();
+            productRepositoryMock.Setup(repo => repo.GetById(productId)).ReturnsAsync(existingProduct);
+            productRepositoryMock.Setup(repo => repo.Update(existingProduct)).Verifiable();
 
+            var controller = new ProductController(productRepositoryMock.Object);
 
+            // Act
+            var result = await controller.UpdateProduct(productId, "Produto Atualizado", 15, 30.0m);
 
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
+        }
 
+        [Fact]
+        public async Task UpdateProduct_NegativePrice_ReturnsBadRequestResult()
+        {
+            // Arrange
+            var productId = Guid.NewGuid();
+            var existingProduct = new Product { Id = productId, Name = "Produto B", Stock = 15, Price = 25.0m };
+
+            var productRepositoryMock = new Mock<IProductRepository>();
+            productRepositoryMock.Setup(repo => repo.GetById(productId)).ReturnsAsync(existingProduct);
+
+            var controller = new ProductController(productRepositoryMock.Object);
+
+            // Act
+            var result = await controller.UpdateProduct(productId, "Produto Atualizado", 20, -10.0m);
+
+            // Assert
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("O preço não pode ser negativo.", badRequestResult.Value);
+        }
+
+        [Fact]
+        public async Task UpdateProduct_ProductNotFound_ReturnsNotFoundResult()
+        {
+            // Arrange
+            var productId = Guid.NewGuid();
+
+            var productRepositoryMock = new Mock<IProductRepository>();
+            productRepositoryMock.Setup(repo => repo.GetById(productId)).ReturnsAsync((Product)null);
+
+            var controller = new ProductController(productRepositoryMock.Object);
+
+            // Act
+            var result = await controller.UpdateProduct(productId, "Produto Atualizado", 20, 30.0m);
+
+            // Assert
+            var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
+            Assert.Equal("Produto não encontrado.", notFoundResult.Value);
+        }
+
+        [Fact]
+        public async Task DeleteProduct_ProductFound_ReturnsOkResult()
+        {
+            // Arrange
+            var productId = Guid.NewGuid();
+            var productRepositoryMock = new Mock<IBaseRepository<Product>>();
+            productRepositoryMock.Setup(repo => repo.GetById(productId)).ReturnsAsync(new Product { Id = productId });
+
+            var controller = new ProductController(productRepositoryMock.Object);
+
+            // Act
+            var result = await controller.DeleteProduct(productId);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result.Result);
+            Assert.Equal("Produto excluído com sucesso!", okResult.Value);
+        }
+
+        [Fact]
+        public async Task DeleteProduct_ProductNotFound_ReturnsNotFound()
+        {
+            // Arrange
+            var productId = Guid.NewGuid();
+            var productRepositoryMock = new Mock<IBaseRepository<Product>>();
+            productRepositoryMock.Setup(repo => repo.GetById(productId)).ReturnsAsync((Product)null);
+
+            var controller = new ProductController(productRepositoryMock.Object);
+
+            // Act
+            var result = await controller.DeleteProduct(productId);
+
+            // Assert
+            var notFoundResult = Assert.IsType<NotFoundObjectResult>(result.Result);
+            Assert.Equal("Produto não encontrado", notFoundResult.Value);
+        }
     }
 }
