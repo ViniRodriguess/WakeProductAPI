@@ -62,6 +62,17 @@ $ dotnet test
 - `SEARCH /api/Product/search?name=`: Filtra os dados pelo nome do produto.
 - `ORDER /api/Product/order?sortBy=`: Ordena os dados por uma coluna específica.
 
+## Github Actions
+
+- Foi implementado uma pipeline através das Actions do Github.
+`.github\workflows\dotnet-desktop.yml`
+Este arquivo configura um job que será executado sempre que houver um push na branch main. O job executa os seguintes passos:
+
+1. Faz o checkout do código-fonte.
+2. Configura o ambiente .NET Core.
+3. Restaura as dependências do projeto.
+4. Executa os testes automatizados.
+
 ## Contribuição
 Contribuições são bem-vindas! Sinta-se à vontade para enviar pull requests ou relatar problemas.
 
