@@ -3,44 +3,49 @@ name: .NET Tests
 on:
   push:
     branches:
-      - master  # ou nome da sua branch principal
+      - master
   pull_request:
     branches:
-      - master  # ou nome da sua branch principal
+      - master
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout
+      uses: actions/checkout@v2
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '8.0.x'
 
-    - name: Restore dependencies
-      run: dotnet restore
+    - name: Restore Dependencies
+      run: dotnet restore ProductAPI/ProductAPI.csproj
 
     - name: Build
-      run: dotnet build --configuration Release --no-restore
+      run: dotnet build ProductAPI/ProductAPI.csproj --configuration Release --no-restore
 
     - name: Test
-      run: |
-        dotnet test --verbosity normal --configuration Release --no-build \
-          /p:CollectCoverage=true \
-          /p:CoverletOutputFormat=lcov \
-          /p:CoverletOutput=../Test/ProductControllerTest/coveragereport/
-    
-    - name: Publish Test Results
-      uses: actions/upload-artifact@v2
-      with:
-        name: TestResults
-        path: TestResults
+      run: dotnet test ProductControllerTest/ProductControllerTest.csproj --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
 
-    - name: Publish Code Coverage
-      uses: actions/upload-artifact@v2
+    - name: Code Coverage Report
+      uses: irongut/CodeCoverageSummary@v1.3.0
       with:
-        name: Coverage
-        path: ../Test/ProductControllerTest/coveragereport/
+        filename: coverage/**/coverage.cobertura.xml
+        badge: true
+        fail_below_min: true
+        format: markdown
+        hide_branch_rate: false
+        hide_complexity: true
+        indicators: true
+        output: both
+        thresholds: '60 80'
+
+    - name: Add Coverage PR Comment
+      uses: marocchino/sticky-pull-request-comment@v2
+      if: github.event_name == 'pull_request'
+      with:
+        recreate: true
+        path: code-coverage-results.md
