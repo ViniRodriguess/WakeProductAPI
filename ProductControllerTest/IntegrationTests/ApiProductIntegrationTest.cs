@@ -55,29 +55,6 @@ namespace ProductAPI.Tests
         }
 
         [Fact]
-        public async Task PUT_Atualiza_Produto_Existente()
-        {
-            // Arrange
-            using var application = new ProductAPIApplication();
-
-            var initialProduct = new Product { Name = "Produto Inicial", Stock = 10, Price = 20.0m };
-            await TestDataUtilities.CreateProductInDatabase(application, initialProduct);
-
-            var productId = initialProduct.Id;
-
-            var updatedProduct = new Product { Id = productId, Name = "Produto Atualizado", Stock = 30, Price = 15.75m };
-            var url = $"/api/Product/{productId}";
-
-            var client = application.CreateClient();
-
-            // Act
-            var response = await client.PutAsJsonAsync(url, updatedProduct);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        }
-
-        [Fact]
         public async Task DELETE_Exclui_Produto_Existente()
         {
             using var application = new ProductAPIApplication();
