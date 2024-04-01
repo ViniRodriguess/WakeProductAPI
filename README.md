@@ -30,9 +30,20 @@ $ git clone https://github.com/ViniRodriguess/WakeProductAPI.git
 
 1. Abra o arquivo `appsettings.json` e configure a conexão com o banco de dados SQL Server.
 
-2. Execute as migrations para criar o banco de dados, as tabelas e os dados iniciais:
+2. Configure o dotnet-ef para rodar as migrations:
+
 ```bash
-# Rode as migrations
+# Instale o dotnet-ef global
+$ dotnet tool install --global dotnet-ef
+# Faça update da ferramente
+$ dotnet tool update --global dotnet-ef
+# Verifique a instalação
+$ dotnet ef
+```
+
+3. Execute as migrations para criar o banco de dados, as tabelas e os dados iniciais:
+```bash
+# Rode as migrations (em alguns casos, é necessário especificar o caminho do projeto com a flag --project)
 $ dotnet ef database update
 ```
 
