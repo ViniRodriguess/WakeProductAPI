@@ -7,7 +7,12 @@ namespace ProductAPI.Data
     {
         public DbSet<Product> Products { get; set; }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        public DataContext(DbContextOptions<DataContext> options) : base(options)
+        {
+
+        }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Product>()
                 .Property(p => p.Price)

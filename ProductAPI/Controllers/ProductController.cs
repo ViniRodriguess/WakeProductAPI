@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ProductAPI.Models;
 using ProductAPI.Repository.Interfaces;
-using System;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 
 namespace ProductAPI.Controllers
 {
@@ -81,7 +79,7 @@ namespace ProductAPI.Controllers
                 await _productRepository.Add(product);
                 return Ok(product);
             }
-            catch (Exception ex)
+            catch
             {
                 return StatusCode(500, "Ocorreu um erro ao adicionar o produto.");
             }
@@ -111,7 +109,7 @@ namespace ProductAPI.Controllers
                 await _productRepository.Update(existingProduct);
                 return Ok(existingProduct);
             }
-            catch (Exception ex)
+            catch
             {
                 return StatusCode(500, "Ocorreu um erro ao atualizar o produto.");
             }

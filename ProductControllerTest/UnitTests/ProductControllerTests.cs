@@ -4,9 +4,8 @@ using ProductAPI.Models;
 using ProductAPI.Repository.Interfaces;
 using Moq;
 using System.Linq.Expressions;
-using System.Linq;
 
-namespace ProductAPI.Tests
+namespace ProductAPI.Tests.UnitTests
 {
     public class ProductControllerTests
     {
@@ -269,7 +268,7 @@ namespace ProductAPI.Tests
             var productId = Guid.NewGuid();
 
             var productRepositoryMock = new Mock<IProductRepository>();
-            productRepositoryMock.Setup(repo => repo.GetById(productId)).ReturnsAsync((Product)null);
+            productRepositoryMock.Setup(repo => repo.GetById(productId)).ReturnsAsync((Product?)null);
 
             var controller = new ProductController(productRepositoryMock.Object);
 
@@ -305,7 +304,7 @@ namespace ProductAPI.Tests
             // Arrange
             var productId = Guid.NewGuid();
             var productRepositoryMock = new Mock<IBaseRepository<Product>>();
-            productRepositoryMock.Setup(repo => repo.GetById(productId)).ReturnsAsync((Product)null);
+            productRepositoryMock.Setup(repo => repo.GetById(productId)).ReturnsAsync((Product?)null);
 
             var controller = new ProductController(productRepositoryMock.Object);
 

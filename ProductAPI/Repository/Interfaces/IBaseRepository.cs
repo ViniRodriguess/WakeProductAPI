@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
+﻿using System.Linq.Expressions;
 
 namespace ProductAPI.Repository.Interfaces
 {
@@ -15,7 +12,7 @@ namespace ProductAPI.Repository.Interfaces
         Task<List<T>> GetAllOrderedBy(Expression<Func<T, object>> orderBy);
         Task<List<T>> SearchByName(string name);
         Task<List<T>> Search(Expression<Func<T, bool>> predicate); 
-        Task<T> GetById(Guid id);
+        Task<T?> GetById(Guid id);
         Task Add(T entity);
         Task Update(T entity);
         Task Delete(Guid id);
