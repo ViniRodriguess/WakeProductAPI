@@ -3,44 +3,29 @@ name: .NET Tests
 on:
   push:
     branches:
-      - master  # ou nome da sua branch principal
+      - master
   pull_request:
     branches:
-      - master  # ou nome da sua branch principal
+      - master
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout
+      uses: actions/checkout@v2
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '8.0.x'
 
-    - name: Restore dependencies
-      run: dotnet restore
+    - name: Restore Dependencies
+      run: dotnet restore ProductAPI/ProductAPI.csproj
 
     - name: Build
-      run: dotnet build --configuration Release --no-restore
+      run: dotnet build ProductAPI/ProductAPI.csproj --configuration Release --no-restore
 
     - name: Test
-      run: |
-        dotnet test --verbosity normal --configuration Release --no-build \
-          /p:CollectCoverage=true \
-          /p:CoverletOutputFormat=lcov \
-          /p:CoverletOutput=../home/runner/work/WakeProductAPI/WakeProductAPI/Test/ProductControllerTest/coveragereport/
-    
-    - name: Publish Test Results
-      uses: actions/upload-artifact@v2
-      with:
-        name: TestResults
-        path: TestResults
-
-    - name: Publish Code Coverage
-      uses: actions/upload-artifact@v2
-      with:
-        name: Coverage
-        path: /home/runner/work/WakeProductAPI/WakeProductAPI/Test/ProductControllerTest/coveragereport/
+      run: dotnet test
