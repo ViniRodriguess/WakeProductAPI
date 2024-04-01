@@ -28,7 +28,7 @@ jobs:
       run: dotnet build ProductAPI/ProductAPI.csproj --configuration Release --no-restore
 
     - name: Test
-      run: dotnet test ProductControllerTest/ProductControllerTest.csproj --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
+      run: dotnet test ProductAPI/ProductAPI.csproj --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
 
     - name: Code Coverage Report
       uses: irongut/CodeCoverageSummary@v1.3.0
